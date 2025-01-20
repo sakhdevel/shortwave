@@ -1,19 +1,3 @@
-// Shortwave - gstreamer_backend.rs
-// Copyright (C) 2021-2022  Felix Häcker <haeckerfelix@gnome.org>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -616,5 +600,19 @@ impl GstreamerBackend {
             }
             _ => (),
         };
+    }
+
+    pub fn handle_output_device_change(&self) {
+        // Get the current output device
+        let output_device = self.pipeline.by_name("pulsesink").unwrap();
+
+        // Get the new output device
+        let new_output_device = gstreamer::ElementFactory::make("pulsesink", Some("pulsesink")).unwrap();
+
+        // Set the new output device
+        self.pipeline.set_state(gstreamer::State::Null).unwrap();
+        self.pipeline.remove(&output_device).unwrap();
+        self.pipeline.add(&new_output_device).unwrap();
+        self.pipeline.set_state(gstreamer::State::Playing).unwrap();
     }
 }
